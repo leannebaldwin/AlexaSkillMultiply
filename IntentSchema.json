@@ -1,23 +1,23 @@
 {
-  "intents":[
+  "intents": [
     {
-      "intent": "AnswerIntent"
+      "intent": "AnswerIntent",
       "slots": [
-      {
-      "name": "Answer",
-      "type": "AMAZON.NUMBER"
-    }
-    ]
+        {
+          "name": "Answer",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
     },
-    {
-      "intent": "AnswerOnlyIntent"
+        {
+      "intent": "AnswerOnlyIntent",
       "slots": [
-      {
-      "name": "Answer",
-      "type": "AMAZON.NUMBER"
-    }
-]
-},
+        {
+          "name": "Answer",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
     {
       "intent": "DontKnowIntent"
     },
