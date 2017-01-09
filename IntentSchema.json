@@ -16,6 +16,8 @@
       "name": "Answer",
       "type": "AMAZON.NUMBER"
     }
+]
+},
     {
       "intent": "DontKnowIntent"
     },
