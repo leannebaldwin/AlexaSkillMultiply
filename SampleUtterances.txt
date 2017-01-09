@@ -1,3 +1,9 @@
+AnswerIntent the answer is {Answer}
+AnswerIntent my answer is {Answer}
+AnswerIntent is it {Answer}
+AnswerIntent {Answer} is my answer
+AnswerOnlyIntent {Answer}
+
 DontKnowIntent i don't know
 DontKnowIntent don't know
 DontKnowIntent skip
