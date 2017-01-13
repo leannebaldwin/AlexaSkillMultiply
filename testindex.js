@@ -37,14 +37,9 @@ exports.handler = function (event, context) {
     try {
         console.log("event.session.application.applicationId=" + event.session.application.applicationId);
 
-        /**
-         * Uncomment this if statement and populate with your skill's application ID to
-         * prevent someone else from configuring a skill that sends requests to this function.
-         */
-
-//     if (event.session.application.applicationId !== "amzn1.echo-sdk-ams.app.05aecccb3-1461-48fb-a008-822ddrt6b516") {
-//         context.fail("Invalid Application ID");
-//      }
+  if (event.session.application.applicationId !== "amzn1.ask.skill.034c99ec-e55e-4c6a-89ec-b4a29c6812b2") {
+      context.fail("Invalid Application ID");
+  }
 
         if (event.session.new) {
             onSessionStarted({requestId: event.request.requestId}, event.session);
@@ -71,19 +66,13 @@ exports.handler = function (event, context) {
     }
 };
 
-/**
- * Called when the session starts.
- */
 function onSessionStarted(sessionStartedRequest, session) {
     console.log("onSessionStarted requestId=" + sessionStartedRequest.requestId
         + ", sessionId=" + session.sessionId);
 
-    // add any session init logic here
 }
 
-/**
- * Called when the user invokes the skill without specifying what they want.
- */
+
 function onLaunch(launchRequest, session, callback) {
     console.log("onLaunch requestId=" + launchRequest.requestId
         + ", sessionId=" + session.sessionId);
@@ -91,9 +80,6 @@ function onLaunch(launchRequest, session, callback) {
     getWelcomeResponse(callback);
 }
 
-/**
- * Called when the user specifies an intent for this skill.
- */
 function onIntent(intentRequest, session, callback) {
     console.log("onIntent requestId=" + intentRequest.requestId
         + ", sessionId=" + session.sessionId);
@@ -101,7 +87,6 @@ function onIntent(intentRequest, session, callback) {
     var intent = intentRequest.intent,
         intentName = intentRequest.intent.name;
 
-    // handle yes/no intent after the user has been prompted
     if (session.attributes && session.attributes.userPromptedToContinue) {
         delete session.attributes.userPromptedToContinue;
         if ("AMAZON.NoIntent" === intentName) {
@@ -111,7 +96,6 @@ function onIntent(intentRequest, session, callback) {
         }
     }
 
-    // dispatch custom intents to handlers here
     if ("AnswerIntent" === intentName) {
         handleAnswerRequest(intent, session, callback);
     } else if ("AnswerOnlyIntent" === intentName) {
@@ -135,28 +119,20 @@ function onIntent(intentRequest, session, callback) {
     } 
 }
 
-/**
- * Called when the user ends the session.
- * Is not called when the skill returns shouldEndSession=true.
- */
 function onSessionEnded(sessionEndedRequest, session) {
     console.log("onSessionEnded requestId=" + sessionEndedRequest.requestId
         + ", sessionId=" + session.sessionId);
 
-    // Add any cleanup logic here
 }
-
-// ------- Skill specific business logic -------
 
 var ANSWER_COUNT = 1;
 var GAME_LENGTH = 5;
-// Be sure to change this for your skill.
-var CARD_TITLE = "Flash Cards"; 
+var CARD_TITLE = "Math Test"; 
 
 function getWelcomeResponse(callback) {
-    // Be sure to change this for your skill.
+   
     var sessionAttributes = {},
-        //CHANGE THIS TEXT
+       
         speechOutput = "I will ask you " + GAME_LENGTH.toString()
             + " questions, try to get as many right as you can. Just say the answer. Let's begin. ",
         shouldEndSession = false,
@@ -202,7 +178,6 @@ function populateGameQuestions() {
         indexList.push(i);
     }
 
-    // Pick GAME_LENGTH random questions from the list to ask the user, make sure there are no repeats.
     for (var j = 0; j < GAME_LENGTH; j++){
         var rand = Math.floor(Math.random() * index);
         index -= 1;
@@ -217,9 +192,7 @@ function populateGameQuestions() {
 }
 
 function populateRoundAnswers(gameQuestionIndexes, correctAnswerIndex, correctAnswerTargetLocation) {
-    // Get the answers for a given question, and place the correct answer at the spot marked by the
-    // correctAnswerTargetLocation variable. Note that you can have as many answers as you want but
-    // only ANSWER_COUNT will be selected.
+    
     var answers = [],
         answersCopy = questions[gameQuestionIndexes[correctAnswerIndex]][Object.keys(questions[gameQuestionIndexes[correctAnswerIndex]])[0]],
         temp, i;
@@ -230,7 +203,6 @@ function populateRoundAnswers(gameQuestionIndexes, correctAnswerIndex, correctAn
         throw "Not enough answers for question.";
     }
 
-    // Shuffle the answers, excluding the first element.
     for (var j = 1; j < answersCopy.length; j++){
         var rand = Math.floor(Math.random() * (index - 1)) + 1;
         index -= 1;
@@ -240,7 +212,6 @@ function populateRoundAnswers(gameQuestionIndexes, correctAnswerIndex, correctAn
         answersCopy[rand] = temp;
     }
 
-    // Swap the correct answer into the target location
     for (i = 0; i < ANSWER_COUNT; i++) {
         answers[i] = answersCopy[i];
     }
@@ -258,15 +229,11 @@ function handleAnswerRequest(intent, session, callback) {
     var userGaveUp = intent.name === "DontKnowIntent";
 
     if (!gameInProgress) {
-        // If the user responded with an answer but there is no game in progress, ask the user
-        // if they want to start a new game. Set a flag to track that we've prompted the user.
         sessionAttributes.userPromptedToContinue = true;
         speechOutput = "There is no game in progress. Do you want to start a new game? ";
         callback(sessionAttributes,
             buildSpeechletResponse(CARD_TITLE, speechOutput, speechOutput, false));
-    } else if (!answerSlotValid && !userGaveUp) {
-        // If the user provided answer isn't a number > 0 and < ANSWER_COUNT,
-        // return an error message to the user. Remember to guide the user into providing correct values.
+    } else if (!answerSlotValid && !userGaveUp) 
         var reprompt = session.attributes.speechOutput;
         var speechOutput = "Sorry, your answer is not is our list. " + reprompt;
         callback(session.attributes,
@@ -289,7 +256,6 @@ function handleAnswerRequest(intent, session, callback) {
             }
             speechOutputAnalysis += "The correct answer is " + correctAnswerText + ". ";
         }
-        // if currentQuestionIndex is 4, we've reached 5 questions (zero-indexed) and can exit the game session
         if (currentQuestionIndex == GAME_LENGTH - 1) {
             speechOutput = userGaveUp ? "" : "That answer is ";
             speechOutput += speechOutputAnalysis + "You got " + currentScore.toString() + " out of "
@@ -299,7 +265,6 @@ function handleAnswerRequest(intent, session, callback) {
         } else {
             currentQuestionIndex += 1;
             var spokenQuestion = Object.keys(questions[gameQuestions[currentQuestionIndex]]);
-            // Generate a random index for the correct answer, from 0 to 3
             correctAnswerIndex = Math.floor(Math.random() * (ANSWER_COUNT));
             var roundAnswers = populateRoundAnswers(gameQuestions, currentQuestionIndex, correctAnswerIndex),
 
@@ -328,8 +293,6 @@ function handleAnswerRequest(intent, session, callback) {
 }
 
 function handleRepeatRequest(intent, session, callback) {
-    // Repeat the previous speechOutput and repromptText from the session attributes if available
-    // else start a new game session
     if (!session.attributes || !session.attributes.speechOutput) {
         getWelcomeResponse(callback);
     } else {
@@ -339,15 +302,11 @@ function handleRepeatRequest(intent, session, callback) {
 }
 
 function handleGetHelpRequest(intent, session, callback) {
-    // Set a flag to track that we're in the Help state.
     if (session.attributes) {
         session.attributes.userPromptedToContinue = true;
     } else {
-        // In case user invokes and asks for help simultaneously.
         session.attributes = { userPromptedToContinue: true };
     }
-    
-    // Do not edit the help dialogue. This has been created by the Alexa team to demonstrate best practices.
 
     var speechOutput = "To start a new game at any time, say, start new game. "
         + "To repeat the last element, say, repeat. "
@@ -360,9 +319,8 @@ function handleGetHelpRequest(intent, session, callback) {
 }
 
 function handleFinishSessionRequest(intent, session, callback) {
-    // End the session with a custom closing statment when the user wants to quit the game
     callback(session.attributes,
-        buildSpeechletResponseWithoutCard("Thanks for playing Flash Cards!", "", true));
+        buildSpeechletResponseWithoutCard("Thanks for playing Math Test!", "", true));
 }
 
 function isAnswerSlotValid(intent) {
@@ -370,8 +328,6 @@ function isAnswerSlotValid(intent) {
     var answerSlotIsInt = answerSlotFilled && !isNaN(parseInt(intent.slots.Answer.value));
     return 1;
 }
-
-// ------- Helper functions to build responses -------
 
 
 function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
