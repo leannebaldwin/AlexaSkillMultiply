@@ -37,9 +37,14 @@ exports.handler = function (event, context) {
     try {
         console.log("event.session.application.applicationId=" + event.session.application.applicationId);
 
-    if (event.session.application.applicationId !== "amzn1.echo-sdk-ams.app.05aecccb3-1461-48fb-a008-822ddrt6b516") {
-       context.fail("Invalid Application ID");
-       }
+        /**
+         * Uncomment this if statement and populate with your skill's application ID to
+         * prevent someone else from configuring a skill that sends requests to this function.
+         */
+
+//     if (event.session.application.applicationId !== "amzn1.echo-sdk-ams.app.05aecccb3-1461-48fb-a008-822ddrt6b516") {
+//         context.fail("Invalid Application ID");
+//      }
 
         if (event.session.new) {
             onSessionStarted({requestId: event.request.requestId}, event.session);
@@ -122,14 +127,12 @@ function onIntent(intentRequest, session, callback) {
     } else if ("AMAZON.RepeatIntent" === intentName) {
         handleRepeatRequest(intent, session, callback);
     } else if ("AMAZON.HelpIntent" === intentName) {
-        handleGetHelpRequest(intent, session, callback);
+            handleGetHelpRequest(intent, session, callback);
     } else if ("AMAZON.StopIntent" === intentName) {
         handleFinishSessionRequest(intent, session, callback);
     } else if ("AMAZON.CancelIntent" === intentName) {
         handleFinishSessionRequest(intent, session, callback);
-    } else {
-        throw "Invalid intent";
-    }
+    } 
 }
 
 /**
@@ -145,14 +148,17 @@ function onSessionEnded(sessionEndedRequest, session) {
 
 // ------- Skill specific business logic -------
 
-var ANSWER_COUNT = 4;
+var ANSWER_COUNT = 1;
 var GAME_LENGTH = 5;
-var CARD_TITLE = "Trivia"; // Be sure to change this for your skill.
+// Be sure to change this for your skill.
+var CARD_TITLE = "Flash Cards"; 
 
 function getWelcomeResponse(callback) {
+    // Be sure to change this for your skill.
     var sessionAttributes = {},
+        //CHANGE THIS TEXT
         speechOutput = "I will ask you " + GAME_LENGTH.toString()
-            + " questions, try to get as many right as you can. Just say the number of the answer. Let's begin. ",
+            + " questions, try to get as many right as you can. Just say the answer. Let's begin. ",
         shouldEndSession = false,
 
         gameQuestions = populateGameQuestions(),
@@ -160,13 +166,13 @@ function getWelcomeResponse(callback) {
         roundAnswers = populateRoundAnswers(gameQuestions, 0, correctAnswerIndex),
 
         currentQuestionIndex = 0,
-        spokenQuestion = Object.keys(questions[gameQuestions[currentQuestionIndex]])[0],
-        repromptText = "Question 1. " + spokenQuestion + " ",
+        spokenQuestion = Object.keys(questions[gameQuestions[currentQuestionIndex]]),
+        repromptText = spokenQuestion,
 
         i, j;
 
     for (i = 0; i < ANSWER_COUNT; i++) {
-        repromptText += (i+1).toString() + ". " + roundAnswers[i] + ". "
+        repromptText += ""
     }
     speechOutput += repromptText;
     sessionAttributes = {
@@ -262,7 +268,7 @@ function handleAnswerRequest(intent, session, callback) {
         // If the user provided answer isn't a number > 0 and < ANSWER_COUNT,
         // return an error message to the user. Remember to guide the user into providing correct values.
         var reprompt = session.attributes.speechOutput;
-        var speechOutput = "Your answer must be a number between 1 and " + ANSWER_COUNT + ". " + reprompt;
+        var speechOutput = "Sorry, your answer is not is our list. " + reprompt;
         callback(session.attributes,
             buildSpeechletResponse(CARD_TITLE, speechOutput, reprompt, false));
     } else {
@@ -274,33 +280,33 @@ function handleAnswerRequest(intent, session, callback) {
 
         var speechOutputAnalysis = "";
 
-        if (answerSlotValid && parseInt(intent.slots.Answer.value) == correctAnswerIndex) {
+        if (answerSlotValid && intent.slots.Answer.value.toUpperCase() == correctAnswerText.toUpperCase()) {
             currentScore++;
             speechOutputAnalysis = "correct. ";
         } else {
             if (!userGaveUp) {
                 speechOutputAnalysis = "wrong. "
             }
-            speechOutputAnalysis += "The correct answer is " + correctAnswerIndex + ": " + correctAnswerText + ". ";
+            speechOutputAnalysis += "The correct answer is " + correctAnswerText + ". ";
         }
         // if currentQuestionIndex is 4, we've reached 5 questions (zero-indexed) and can exit the game session
         if (currentQuestionIndex == GAME_LENGTH - 1) {
             speechOutput = userGaveUp ? "" : "That answer is ";
             speechOutput += speechOutputAnalysis + "You got " + currentScore.toString() + " out of "
-                + GAME_LENGTH.toString() + " questions correct. Thank you for playing!";
+                + GAME_LENGTH.toString() + " questions correct. Thank you for learning with Alexa!";
             callback(session.attributes,
                 buildSpeechletResponse(CARD_TITLE, speechOutput, "", true));
         } else {
             currentQuestionIndex += 1;
-            var spokenQuestion = Object.keys(questions[gameQuestions[currentQuestionIndex]])[0];
+            var spokenQuestion = Object.keys(questions[gameQuestions[currentQuestionIndex]]);
             // Generate a random index for the correct answer, from 0 to 3
             correctAnswerIndex = Math.floor(Math.random() * (ANSWER_COUNT));
             var roundAnswers = populateRoundAnswers(gameQuestions, currentQuestionIndex, correctAnswerIndex),
 
                 questionIndexForSpeech = currentQuestionIndex + 1,
-                repromptText = "Question " + questionIndexForSpeech.toString() + ". " + spokenQuestion + " ";
+                repromptText =  spokenQuestion ;
             for (var i = 0; i < ANSWER_COUNT; i++) {
-                repromptText += (i+1).toString() + ". " + roundAnswers[i] + ". "
+                repromptText +=  ""
             }
             speechOutput += userGaveUp ? "" : "That answer is ";
             speechOutput += speechOutputAnalysis + "Your score is " + currentScore.toString() + ". " + repromptText;
@@ -333,24 +339,20 @@ function handleRepeatRequest(intent, session, callback) {
 }
 
 function handleGetHelpRequest(intent, session, callback) {
-    // Provide a help prompt for the user, explaining how the game is played. Then, continue the game
-    // if there is one in progress, or provide the option to start another one.
-    
-    // Ensure that session.attributes has been initialized
-    if (!session.attributes) {
-        session.attributes = {};
-    }
-
     // Set a flag to track that we're in the Help state.
-    session.attributes.userPromptedToContinue = true;
-
+    if (session.attributes) {
+        session.attributes.userPromptedToContinue = true;
+    } else {
+        // In case user invokes and asks for help simultaneously.
+        session.attributes = { userPromptedToContinue: true };
+    }
+    
     // Do not edit the help dialogue. This has been created by the Alexa team to demonstrate best practices.
 
-    var speechOutput = "I will ask you " + GAME_LENGTH + " multiple choice questions. Respond with the number of the answer. "
-        + "For example, say one, two, three, or four. To start a new game at any time, say, start game. "
-        + "To repeat the last question, say, repeat. "
+    var speechOutput = "To start a new game at any time, say, start new game. "
+        + "To repeat the last element, say, repeat. "
         + "Would you like to keep playing?",
-        repromptText = "To give an answer to a question, respond with the number of the answer . "
+        repromptText = "Try to get the right answer. "
         + "Would you like to keep playing?";
         var shouldEndSession = false;
     callback(session.attributes,
@@ -358,15 +360,15 @@ function handleGetHelpRequest(intent, session, callback) {
 }
 
 function handleFinishSessionRequest(intent, session, callback) {
-    // End the session with a "Good bye!" if the user wants to quit the game
+    // End the session with a custom closing statment when the user wants to quit the game
     callback(session.attributes,
-        buildSpeechletResponseWithoutCard("Good bye!", "", true));
+        buildSpeechletResponseWithoutCard("Thanks for playing Flash Cards!", "", true));
 }
 
 function isAnswerSlotValid(intent) {
     var answerSlotFilled = intent.slots && intent.slots.Answer && intent.slots.Answer.value;
     var answerSlotIsInt = answerSlotFilled && !isNaN(parseInt(intent.slots.Answer.value));
-    return answerSlotIsInt && parseInt(intent.slots.Answer.value) < (ANSWER_COUNT + 1) && parseInt(intent.slots.Answer.value) > 0;
+    return 1;
 }
 
 // ------- Helper functions to build responses -------
