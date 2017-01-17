@@ -37,7 +37,7 @@ exports.handler = function (event, context) {
     try {
         console.log("event.session.application.applicationId=" + event.session.application.applicationId);
 
-  if (event.session.application.applicationId !== "amzn1.ask.skill.034c99ec-e55e-4c6a-89ec-b4a29c6812b2") {
+  if (event.session.application.applicationId !== "amzn1.ask.skill.99d85a48-aaf7-4552-b47b-990350016e92") {
       context.fail("Invalid Application ID");
   }
 
@@ -261,7 +261,7 @@ function handleAnswerRequest(intent, session, callback) {
         if (currentQuestionIndex == GAME_LENGTH - 1) {
             speechOutput = userGaveUp ? "" : "That answer is ";
             speechOutput += speechOutputAnalysis + "You got " + currentScore.toString() + " out of "
-                + GAME_LENGTH.toString() + " questions correct. Thank you for learning with Leanne!";
+                + GAME_LENGTH.toString() + " questions correct. Thank you for learning with Vital Math!";
             callback(session.attributes,
                 buildSpeechletResponse(CARD_TITLE, speechOutput, "", true));
         } else {
@@ -375,3 +375,5 @@ function buildResponse(sessionAttributes, speechletResponse) {
         version: "1.0",
         sessionAttributes: sessionAttributes,
         response: speechletResponse
+    };
+}
