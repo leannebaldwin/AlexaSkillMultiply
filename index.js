@@ -5,33 +5,12 @@ var questions = [
         "What is" + firstnumber.toString() + "multiplied by" + secondnumber.toString() : [
             correctanswer
         ]
-    },
-    {
-        "What is 6 multiplied by 3?:": [
-            "18"
-        ]
-    },
-    {
-        "What is 4 multiplied by 8?": [
-            "32"
-        ]
-    },
-    {
-        "What is 11 multiplied by 12?": [
-            "132"
-        ]
-    },
-    {
-        "What is 2 multiplied by 2?": [
-            "2"
-        ]
-    },
-    {
-        "What is 7 multiplied by 8?": [
-            "56"
-        ]
-    },
+    }
 ];
+
+var firstnumber = integer[1..12],
+    secondnumber = integer[1..12],
+    correctanswer = firstnumber*secondnumber;
 
 exports.handler = function (event, context) {
     try {
