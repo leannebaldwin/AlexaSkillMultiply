@@ -8,9 +8,13 @@ var questions = [
     }
 ];
 
-var firstnumber = integer[1..12],
-    secondnumber = integer[1..12],
-    correctanswer = firstnumber*secondnumber;
+var firstnumber = randomIntInc(1,12);
+var    secondnumber = randomIntInc(1,12);
+var    correctanswer = firstnumber*secondnumber;
+
+function randomIntInc (low, high) {
+    return Math.floor(Math.random() * (high -low + 1) +low);
+}
 
 exports.handler = function (event, context) {
     try {
@@ -355,4 +359,3 @@ function buildResponse(sessionAttributes, speechletResponse) {
         sessionAttributes: sessionAttributes,
         response: speechletResponse
     };
-}
